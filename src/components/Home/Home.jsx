@@ -10,6 +10,22 @@ const Home = () => {
     const [lastName, setLastName] = useState('');
     const [city, setCity] = useState('');
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const rowsPerPage = 5;
+
+    const tableData = [
+        { firstName: "Mark", lastName: "Otto", handle: "@mdo" },
+        { firstName: "Jacob", lastName: "Thornton", handle: "@fat" },
+        { firstName: "Jacob", lastName: "Thornton", handle: "@fat" },
+        { firstName: "Jacob", lastName: "Thornton", handle: "@fat" },
+        { firstName: "Jacob", lastName: "Thornton", handle: "@fat" },
+        { firstName: "John", lastName: "Doe", handle: "@johndoe" },
+        { firstName: "Jane", lastName: "Doe", handle: "@janedoe" },
+        { firstName: "Michael", lastName: "Smith", handle: "@mikesmith" },
+        { firstName: "Sarah", lastName: "Lee", handle: "@sarahlee" },
+        { firstName: "Anna", lastName: "Kim", handle: "@annakim" }
+    ];
+
     const handleTabClick = (tab) => {
         setActiveTab(tab);
     };
@@ -55,6 +71,14 @@ const Home = () => {
         }
     };
 
+    const indexOfLastRow = currentPage * rowsPerPage;
+    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+    const currentRows = tableData.slice(indexOfFirstRow, indexOfLastRow);
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    const totalPages = Math.ceil(tableData.length / rowsPerPage);
+
     return (
         <div className="container mt-4">
             <div className="row">
@@ -70,7 +94,7 @@ const Home = () => {
                                 aria-controls="pills-home"
                                 aria-selected={activeTab === "home"}
                             >
-                                Home
+                                Send Message
                             </button>
                         </li>
                         <li className="nav-item" role="presentation">
@@ -83,7 +107,7 @@ const Home = () => {
                                 aria-controls="pills-profile"
                                 aria-selected={activeTab === "profile"}
                             >
-                                Profile
+                                View Sent Messages
                             </button>
                         </li>
                     </ul>
@@ -215,45 +239,42 @@ const Home = () => {
                                 <table className="table table-striped">
                                     <thead>
                                         <tr>
-                                            <th scope="col">#</th>
+                                            <th scope="col">S No.</th>
                                             <th scope="col">First</th>
                                             <th scope="col">Last</th>
                                             <th scope="col">Handle</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <th scope="row">1</th>
-                                            <td>Mark</td>
-                                            <td>Otto</td>
-                                            <td>@mdo</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">2</th>
-                                            <td>Jacob</td>
-                                            <td>Thornton</td>
-                                            <td>@fat</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">3</th>
-                                            <td>Jacob</td>
-                                            <td>Thornton</td>
-                                            <td>@fat</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">4</th>
-                                            <td>Jacob</td>
-                                            <td>Thornton</td>
-                                            <td>@fat</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">5</th>
-                                            <td>Jacob</td>
-                                            <td>Thornton</td>
-                                            <td>@fat</td>
-                                        </tr>
+                                        {currentRows.map((data, index) => (
+                                            <tr key={index}>
+                                                <th scope="row">{index + 1 + (currentPage - 1) * rowsPerPage}</th>
+                                                <td>{data.firstName}</td>
+                                                <td>{data.lastName}</td>
+                                                <td>{data.handle}</td>
+                                            </tr>
+                                        ))}
                                     </tbody>
                                 </table>
+
+                                {/* Pagination Controls */}
+                                <nav>
+                                    <ul className="pagination">
+                                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                            <button className="page-link" onClick={() => paginate(currentPage - 1)}>
+                                                Previous
+                                            </button>
+                                        </li>
+                                        <li className="page-item">
+                                            <span className="page-link">{currentPage}</span>
+                                        </li>
+                                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                            <button className="page-link" onClick={() => paginate(currentPage + 1)}>
+                                                Next
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </nav>
                             </div>
                         </div>
                     </div>
