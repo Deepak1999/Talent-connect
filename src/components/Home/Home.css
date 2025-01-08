@@ -41,11 +41,21 @@ form button {
     background-color: #f8f9fa;
     font-weight: bold;
 }
-.nav-pills .nav-link{
+
+.nav-pills .nav-link {
     background: #8080807d;
 }
-@media(min-width:1100px){
-    .generate_btn_row.row > * {
+
+@media(min-width:1100px) {
+    .generate_btn_row.row>* {
         width: 20%;
     }
 }
+
+/* .dropdown-menu .dropdown-item {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 200px;
+    word-break: break-word;
+} */
