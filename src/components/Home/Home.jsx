@@ -371,6 +371,7 @@
 import React, { useEffect, useState } from "react";
 import './Home.css';
 import ApiBaseUrl from "../Api_base_url/ApiBaseUrl";
+import Swal from 'sweetalert2';
 
 const Home = () => {
     const [activeTab, setActiveTab] = useState("home");
@@ -394,8 +395,8 @@ const Home = () => {
     };
 
     const handleSelectMessage = (message) => {
-        setTempId(message.id);  // Store the selected message ID in the state
-        setSelectedMessage(message);  // Optionally, store the selected message in another state
+        setTempId(message.id);
+        setSelectedMessage(message);
     };
 
     const handleChannelChange = (id) => {
@@ -472,7 +473,6 @@ const Home = () => {
 
             const data = await response.json();
 
-            // Assuming this is where you get the message templates from the API
             setMessages(data.response);
         } catch (err) {
             setError('Failed to fetch messages');
@@ -515,6 +515,70 @@ const Home = () => {
         }
     };
 
+    const SendMessage = async () => {
+        try {
+            const response = await fetch(`${ApiBaseUrl}/send-message`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "userid": userId,
+                },
+                body: JSON.stringify({
+                    candidateFirstName: firstName,
+                    candidateLastName: lastName,
+                    candidateContact: mobileNumber,
+                    candidateLocation: city,
+                    channel: selectedFilter,
+                    template: tempId,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to send message");
+            }
+
+            const data = await response.json();
+
+            if (data.statusCode === 200) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Message Sent Successful',
+                    text: data.statusMessage || 'Message Sent Successful.',
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'failed to sent message',
+                    text: data.statusMessage || 'Error to sent message.',
+                });
+            }
+
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'An error occurred while sending the message.',
+            });
+        }
+    };
+
+
+    const handleSendClick = (e) => {
+        e.preventDefault();
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to send this message?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, send it!',
+            cancelButtonText: 'No, cancel!',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                SendMessage();
+            }
+        });
+    };
 
     return (
         <div className="container py-3">
@@ -563,7 +627,6 @@ const Home = () => {
                                 <div>
                                     <div className="d-flex align-items-center flex-wrap gap-4 mb-4">
                                         <h4 className="m-0">Select Channel</h4>
-                                        <p>channel id {JSON.stringify(selectedFilter)}</p>
                                         <div className="form-check">
                                             <input
                                                 className="form-check-input"
@@ -573,7 +636,7 @@ const Home = () => {
                                                 value="text"
                                                 checked={selectedChannel === "text"}
                                                 onChange={() => handleChannelChange("text")}
-                                                onClick={() => handleFilterChange("1")} // Pass the ID for Text channel
+                                                onClick={() => handleFilterChange("1")}
                                             />
                                             <label className="form-check-label" htmlFor="channel-text">
                                                 Text
@@ -588,15 +651,13 @@ const Home = () => {
                                                 value="whatsapp"
                                                 checked={selectedChannel === "whatsapp"}
                                                 onChange={() => handleChannelChange("whatsapp")}
-                                                onClick={() => handleFilterChange("2")} // Pass the ID for WhatsApp channel
+                                                onClick={() => handleFilterChange("2")}
                                             />
                                             <label className="form-check-label" htmlFor="channel-whatsapp">
                                                 WhatsApp
                                             </label>
                                         </div>
                                     </div>
-
-
                                     <div className="dropdown">
                                         <button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                             Messages
@@ -607,11 +668,11 @@ const Home = () => {
                                             ) : (
                                                 messages && messages.length > 0 ? (
                                                     messages.map((message) => (
-                                                        <li key={message.id}>  {/* Ensure each item has a unique key */}
+                                                        <li key={message.id}>
                                                             <button
                                                                 className="dropdown-item"
                                                                 type="button"
-                                                                onClick={() => handleSelectMessage(message)} // Set selected message on click
+                                                                onClick={() => handleSelectMessage(message)}
                                                             >
                                                                 <strong>{message.templateKey}</strong>: {message.templateValue}
                                                             </button>
@@ -629,8 +690,6 @@ const Home = () => {
                                             </div>
                                         )}
                                     </div>
-
-
                                     {selectedChannel === "text" && (
                                         <>
                                             <h4>Candidate Information</h4>
@@ -689,12 +748,11 @@ const Home = () => {
                                                 <div className="row generate_box">
                                                     <div className="col-md-6">
                                                         <div className="form-floating">
-                                                            <textarea className="form-control" value={generateMessages} style={{ height: "100px" }} readOnly></textarea>
+                                                            <textarea className="form-control" value={generateMessages} style={{ height: "80px" }} readOnly></textarea>
                                                         </div>
                                                     </div>
                                                     <div className="col-md- d-flex justify-content-center align-items-center gap-3">
-                                                        <button type="submit" className="btn btn-success">Send</button>
-                                                        <button type="button" className="btn btn-danger">Cancel</button>
+                                                        <button type="submit" className="btn btn-success" onClick={handleSendClick}>Send</button>
                                                     </div>
                                                 </div>
                                             </form>
@@ -702,7 +760,6 @@ const Home = () => {
                                     )}
                                 </div>
                             </div>
-
                             <div
                                 className={`tab-pane fade ${activeTab === "profile" ? "show active" : ""}`}
                                 id="pills-profile"
@@ -712,8 +769,6 @@ const Home = () => {
                                 <div className="">
                                     <h3>Your Profile</h3>
                                     <p>This is the content for the Profile tab. You can add profile details here.</p>
-
-                                    {/* Profile Table */}
                                     <table className="table table-striped">
                                         <thead>
                                             <tr>
@@ -753,7 +808,6 @@ const Home = () => {
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
