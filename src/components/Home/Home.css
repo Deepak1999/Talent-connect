@@ -1,6 +1,6 @@
 .content-box {
     background-color: #f8f9fa;
-    border-radius: 8px;
+    border-radius: 16px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     margin-top: 20px;
     padding: 20px;
@@ -40,4 +40,12 @@ form button {
 .table th {
     background-color: #f8f9fa;
     font-weight: bold;
+}
+.nav-pills .nav-link{
+    background: #8080807d;
+}
+@media(min-width:1100px){
+    .generate_btn_row.row > * {
+        width: 20%;
+    }
 }
