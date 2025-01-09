@@ -23,7 +23,7 @@ const Home = () => {
 
 
     const [data, setData] = useState([]);
-    const [totalPages, setTotalPages] = useState([]);
+    const [totalPages, setTotalPages] = useState(0);
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);
@@ -53,7 +53,7 @@ const Home = () => {
         } else {
             setError('Only alphabetic characters are allowed');
         }
-    };    
+    };
 
     const handleLastNameChange = (e) => {
         const value = e.target.value;
@@ -79,6 +79,17 @@ const Home = () => {
         setSelectedFilter(id);
     };
 
+    const handleFormClear = () => {
+        setFirstName('');
+        setLastName('');
+        setMobileNumber('');
+        setCity('');
+        setSelectedMessage('');
+        setGenerateMessages('');
+        setSelectedFilter('');
+        setMessages('');
+        setSelectedChannel('');
+    }
 
     const fetchTemplates = async () => {
         try {
@@ -86,7 +97,7 @@ const Home = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'userid': userId,
+                    'userId': userId,
                 },
                 body: JSON.stringify({ channel: selectedFilter })
             });
@@ -115,7 +126,7 @@ const Home = () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "userid": userId,
+                    "userId": userId,
                 },
                 body: JSON.stringify({
                     candidateFirstName: firstName,
@@ -145,7 +156,7 @@ const Home = () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "userid": userId,
+                    "userId": userId,
                 },
                 body: JSON.stringify({
                     candidateFirstName: firstName,
@@ -169,6 +180,7 @@ const Home = () => {
                     title: 'Message Sent Successful',
                     text: data.statusMessage || 'Message Sent Successful.',
                 });
+                handleFormClear();
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -200,6 +212,7 @@ const Home = () => {
         }).then((result) => {
             if (result.isConfirmed) {
                 SendMessage();
+                setActiveTab('profile');
             }
         });
     };
@@ -215,11 +228,11 @@ const Home = () => {
                 accessor: 'channel',
             },
             {
-                Header: 'Response Date Time',
+                Header: 'Sent Date Time',
                 accessor: 'responseDateTime',
             },
             {
-                Header: 'Message Sent',
+                Header: 'Messages Sent',
                 accessor: 'messageSent',
             },
         ],
@@ -241,7 +254,7 @@ const Home = () => {
         const fetchMessages = async () => {
             try {
                 const response = await fetch(
-                    'https://tconnectuatapi.altruistindia.com/talent-connect/application/v1/messages-list',
+                    `${ApiBaseUrl}/messages-list`,
                     {
                         method: 'POST',
                         headers: {
@@ -250,16 +263,14 @@ const Home = () => {
                             pageNo: currentPage,
                             pageSize: PageSize,
                         },
-                        body: JSON.stringify({
-                            channel: 1,
-                        }),
                     }
                 );
 
                 const result = await response.json();
+                // console.log("message _list", result);
 
-                setData(result.messages || []);
-                setTotalPages(result.totalPages || 1);
+                setData(result.response.content || []);
+                setTotalPages(result.response.totalPages || 0);
             } catch (error) {
                 console.error('Error fetching messages:', error);
             }
@@ -273,7 +284,7 @@ const Home = () => {
             <div className="content-box p-4">
                 <div className="row">
                     <div className="col-12">
-                        <h3>Welcome To Talent Connect</h3>
+                        <h3>Talent Connect</h3>
                         <ul className="nav nav-pills justify-content-cente gap-3 mb-4" id="pills-tab" role="tablist">
                             <li className="nav-item m-" role="presentation">
                                 <button
@@ -298,7 +309,7 @@ const Home = () => {
                                     aria-controls="pills-profile"
                                     aria-selected={activeTab === "profile"}
                                 >
-                                    View Sent Messages
+                                    Sent Messages
                                 </button>
                             </li>
                         </ul>
@@ -322,12 +333,14 @@ const Home = () => {
                                                 name="channel"
                                                 id="channel-text"
                                                 value="text"
-                                                checked={selectedChannel === "text"}
-                                                onChange={() => handleChannelChange("text")}
+                                                checked={selectedChannel === "SMS"}
+                                                onChange={() => {
+                                                    handleChannelChange("SMS");
+                                                }}
                                                 onClick={() => handleFilterChange("1")}
                                             />
                                             <label className="form-check-label" htmlFor="channel-text">
-                                                Text
+                                                SMS
                                             </label>
                                         </div>
                                         <div className="form-check">
@@ -338,7 +351,9 @@ const Home = () => {
                                                 id="channel-whatsapp"
                                                 value="whatsapp"
                                                 checked={selectedChannel === "whatsapp"}
-                                                onChange={() => handleChannelChange("whatsapp")}
+                                                onChange={() => {
+                                                    handleChannelChange("whatsapp");
+                                                }}
                                                 onClick={() => handleFilterChange("2")}
                                             />
                                             <label className="form-check-label" htmlFor="channel-whatsapp">
@@ -346,6 +361,7 @@ const Home = () => {
                                             </label>
                                         </div>
                                     </div>
+
                                     <div className="dropdown">
                                         <button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                             Messages
@@ -378,9 +394,9 @@ const Home = () => {
                                             </div>
                                         )}
                                     </div>
-                                    {selectedChannel === "text" && (
+                                    {selectedChannel === "SMS" && (
                                         <>
-                                            <h4>Candidate Information</h4>
+                                            <h4>Candidate Information SMS</h4>
                                             <form>
                                                 <div className="row generate_btn_row gap-">
                                                     <div className="col-md-3 mb-3">
@@ -436,7 +452,7 @@ const Home = () => {
                                                 <div className="row generate_box">
                                                     <div className="col-md-6">
                                                         <div className="form-floating">
-                                                            <textarea className="form-control" value={generateMessages} style={{ height: "80px" }} readOnly></textarea>
+                                                            <textarea className="form-control" value={generateMessages} style={{ height: "90px" }} readOnly></textarea>
                                                         </div>
                                                     </div>
                                                     <div className="col-md- d-flex justify-content-center align-items-center gap-3">
@@ -446,6 +462,77 @@ const Home = () => {
                                             </form>
                                         </>
                                     )}
+                                    {selectedChannel === "whatsapp" && (
+                                        <>
+                                            <h4>Candidate Information WhatsApp</h4>
+                                            <form>
+                                                <div className="row generate_btn_row gap-">
+                                                    <div className="col-md-3 mb-3">
+                                                        <label htmlFor="firstName" className="form-label">First Name</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            id="firstName"
+                                                            value={firstName}
+                                                            onChange={handleFirstNameChange}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-3 mb-3">
+                                                        <label htmlFor="lastName" className="form-label">Last Name</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            id="lastName"
+                                                            value={lastName}
+                                                            onChange={handleLastNameChange}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-3 mb-3">
+                                                        <label htmlFor="mobileNumber" className="form-label">Mobile Number</label>
+                                                        <input
+                                                            type="tel"
+                                                            className="form-control"
+                                                            id="mobileNumber"
+                                                            value={mobileNumber}
+                                                            onChange={handleMobileNumberChange}
+                                                            maxLength="10"
+                                                            minLength="10"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-3 mb-3">
+                                                        <label htmlFor="location" className="form-label">City</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            id="location"
+                                                            value={city}
+                                                            onChange={handleCityChange}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-3 d-flex flex-column align-items-start text-end mb-3">
+                                                        <button type="button" className="btn btn-primary mt-auto" onClick={generateMessage}>Generate</button>
+                                                    </div>
+                                                </div>
+                                                <div className="row generate_box">
+                                                    <div className="col-md-6">
+                                                        <div className="form-floating">
+                                                            <textarea className="form-control" value={generateMessages} style={{ height: "90px" }} readOnly></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md- d-flex justify-content-center align-items-center gap-3">
+                                                        <button type="submit" className="btn btn-success" onClick={handleSendClick}>Send</button>
+                                                        {/* <button type="submit" className="btn btn-success" onClick={handleFormClear}>Clear all</button> */}
+
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </>
+                                    )}
+
                                 </div>
                             </div>
                             <div
@@ -454,50 +541,9 @@ const Home = () => {
                                 role="tabpanel"
                                 aria-labelledby="pills-profile-tab"
                             >
-                                {/* <div className="">
-                                    <h3>Your Profile</h3>
-                                    <p>This is the content for the Profile tab. You can add profile details here.</p>
-                                    <table className="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Candidate Contact Number</th>
-                                                <th scope="col">First</th>
-                                                <th scope="col">Last</th>
-                                                <th scope="col">Handle</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {currentRows.map((data, index) => (
-                                                <tr key={index}>
-                                                    <th scope="row">{index + 1 + (currentPage - 1) * PageSize}</th>
-                                                    <td>{data.firstName}</td>
-                                                    <td>{data.lastName}</td>
-                                                    <td>{data.handle}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                    <div>
-                                        <ul className="pagination justify-content-center gap-2">
-                                            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                                <button className="page-link" onClick={() => paginate(currentPage - 1)}>
-                                                    Previous
-                                                </button>
-                                            </li>
-                                            <li className="page-item">
-                                                <span className="page-link">{currentPage}</span>
-                                            </li>
-                                            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                                <button className="page-link" onClick={() => paginate(currentPage + 1)}>
-                                                    Next
-                                                </button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div> */}
                                 <div>
                                     <table {...getTableProps()} style={{ width: '100%', border: '1px solid black' }}>
-                                        <thead>
+                                        <thead style={{ textAlign: "center" }}>
                                             {headerGroups.map(headerGroup => (
                                                 <tr {...headerGroup.getHeaderGroupProps()}>
                                                     {headerGroup.headers.map(column => (
@@ -508,7 +554,7 @@ const Home = () => {
                                                 </tr>
                                             ))}
                                         </thead>
-                                        <tbody {...getTableBodyProps()}>
+                                        <tbody {...getTableBodyProps()} style={{ textAlign: "center" }}>
                                             {rows.map(row => {
                                                 prepareRow(row);
                                                 return (
@@ -527,7 +573,7 @@ const Home = () => {
                                     </table>
 
                                     {/* Pagination Controls */}
-                                    <div>
+                                    <div style={{ textAlign: "center" }} className="mt-3">
                                         <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
                                             Previous
                                         </button>
