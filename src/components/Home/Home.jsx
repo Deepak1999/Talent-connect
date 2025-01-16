@@ -181,6 +181,7 @@ const Home = () => {
                     text: data.statusMessage || 'Message Sent Successful.',
                 });
                 handleFormClear();
+                fetchMessages();
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -250,33 +251,35 @@ const Home = () => {
         }
     };
 
+    const fetchMessages = async () => {
+        try {
+            const response = await fetch(
+                `${ApiBaseUrl}/messages-list`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        userId: userId,
+                        pageNo: currentPage,
+                        pageSize: PageSize,
+                    },
+                }
+            );
+
+            const result = await response.json();
+            // console.log("message _list", result);
+
+            setData(result.response.content || []);
+            setTotalPages(result.response.totalPages || []);
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+        }
+    };
+
     useEffect(() => {
-        const fetchMessages = async () => {
-            try {
-                const response = await fetch(
-                    `${ApiBaseUrl}/messages-list`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            userId: userId,
-                            pageNo: currentPage,
-                            pageSize: PageSize,
-                        },
-                    }
-                );
-
-                const result = await response.json();
-                // console.log("message _list", result);
-
-                setData(result.response.content || []);
-                setTotalPages(result.response.totalPages || 0);
-            } catch (error) {
-                console.error('Error fetching messages:', error);
-            }
-        };
-
         fetchMessages();
+        // const intervalId = setInterval(fetchMessages, 5000);
+        // return () => clearInterval(intervalId);
     }, [userId, currentPage]);
 
     return (
@@ -456,7 +459,8 @@ const Home = () => {
                                                         </div>
                                                     </div>
                                                     <div className="col-md- d-flex justify-content-center align-items-center gap-3">
-                                                        <button type="submit" className="btn btn-success" onClick={handleSendClick}>Send</button>
+                                                        <button type="submit" className="btn btn-success" onClick={handleFormClear}>Clear All</button>
+                                                        <button type="submit" className="btn btn-success" onClick={handleSendClick}>Send Message</button>
                                                     </div>
                                                 </div>
                                             </form>
@@ -524,9 +528,8 @@ const Home = () => {
                                                         </div>
                                                     </div>
                                                     <div className="col-md- d-flex justify-content-center align-items-center gap-3">
-                                                        <button type="submit" className="btn btn-success" onClick={handleSendClick}>Send</button>
-                                                        {/* <button type="submit" className="btn btn-success" onClick={handleFormClear}>Clear all</button> */}
-
+                                                        <button type="submit" className="btn btn-success" onClick={handleFormClear}>Clear All</button>
+                                                        <button type="submit" className="btn btn-success" onClick={handleSendClick}>Send Message</button>
                                                     </div>
                                                 </div>
                                             </form>
@@ -542,6 +545,7 @@ const Home = () => {
                                 aria-labelledby="pills-profile-tab"
                             >
                                 <div>
+                                    <h3>Candidate Sent Messages</h3>
                                     <table {...getTableProps()} style={{ width: '100%', border: '1px solid black' }}>
                                         <thead style={{ textAlign: "center" }}>
                                             {headerGroups.map(headerGroup => (
@@ -571,10 +575,8 @@ const Home = () => {
                                             })}
                                         </tbody>
                                     </table>
-
-                                    {/* Pagination Controls */}
                                     <div style={{ textAlign: "center" }} className="mt-3">
-                                        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                                        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 0}>
                                             Previous
                                         </button>
                                         <span> Page {currentPage} of {totalPages} </span>
@@ -583,7 +585,6 @@ const Home = () => {
                                         </button>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
