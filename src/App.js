@@ -1,16 +1,45 @@
 import './App.css';
-import { Route, Routes, HashRouter } from 'react-router-dom';
-import Home from './components/Home/Home';
-import Welcome from './components/Home/Welcome';
+import { Route, Routes, BrowserRouter, Navigate } from 'react-router-dom';
+import SingleMessageSent from './components/Pages/SingleMessageSent';
+import BulkMessageSent from './components/Pages/BulkMessageSent';
+import Login from './components/Login/Login';
+import ViewSentMessages from './components/ViewSentMessage/ViewSentMessages';
+import Dashboard from './components/Dashboard/Dashboard';
+
+const PrivateRoute = ({ element }) => {
+  const isLoggedIn = localStorage.getItem('isLoggedIn');
+
+  if (!isLoggedIn) {
+    return <Navigate to="/" replace />;
+  }
+
+  return element;
+};
 
 function App() {
   return (
-    <HashRouter>
+    <BrowserRouter> {/* Change HashRouter to BrowserRouter */}
       <Routes>
-        <Route path="/connect-home" element={<Home />} />
-        <Route path="/" element={<Welcome />} />
+        <Route path="/" element={<Login />} />
+
+        <Route
+          path="/dashboard"
+          element={<PrivateRoute element={<Dashboard />} />}
+        />
+        <Route
+          path="/single-message-sent"
+          element={<PrivateRoute element={<SingleMessageSent />} />}
+        />
+        <Route
+          path="/bulk-message-sent"
+          element={<PrivateRoute element={<BulkMessageSent />} />}
+        />
+        <Route
+          path="/message-history"
+          element={<PrivateRoute element={<ViewSentMessages />} />}
+        />
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
 
